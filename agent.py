@@ -36,6 +36,7 @@ Guidelines:
 4. If you have completed the goal fully and verified the flows, use "action": "finish".
 5. Keep your actions logical. If you just filled a login form, click the submit or login button next. Do not repeat the same action in an infinite loop.
 6. CRITICAL: Write all thoughts, reasoning, and bug descriptions in very simple, plain English. Use short sentences and simple words so a non-technical person can understand it easily.
+7. When filling in password fields, ALWAYS generate and use a strong password (at least 12 characters, including uppercase letters, lowercase letters, numbers, and special characters like 'SecurePass123!') to prevent website strength validation failures.
 """
 
 class Agent:
