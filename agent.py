@@ -1,9 +1,32 @@
 import time
 import traceback
 import json
+import queue
 from browser import BrowserManager
 from brain import Brain
 from reporter import Reporter
+
+COPILOT_SYSTEM_PROMPT = """You are an AI Browser Testing Copilot. Your job is to analyze the current website state and suggest the top 3-4 logical next actions for the user to choose from.
+
+Expected JSON output format:
+{
+  "thought": "Your reasoning in very simple, plain English (keep it short, clear, and easy to understand)",
+  "options": [
+    {
+      "label": "Brief description of this option (e.g. Click Login button)",
+      "action": "click",
+      "selector": "The CSS selector for this element",
+      "value": ""
+    },
+    {
+      "label": "Brief description of this option (e.g. Type password)",
+      "action": "fill",
+      "selector": "The CSS selector for this element",
+      "value": "Value to type"
+    }
+  ]
+}
+"""
 
 SYSTEM_PROMPT = """You are an Autonomous AI Browser Testing Agent. Your goal is to thoroughly test a website according to the user's instructions.
 You have access to a simulated browser and can issue commands.
@@ -40,7 +63,7 @@ Guidelines:
 """
 
 class Agent:
-    def __init__(self, target_url: str, goal: str, max_steps: int = 15, ollama_url: str = "http://localhost:11434", model: str = "qwen2.5-coder:7b", headless: bool = False, step_callback=None):
+    def __init__(self, target_url: str, goal: str, max_steps: int = 15, ollama_url: str = "http://localhost:11434", model: str = "qwen2.5-coder:7b", headless: bool = False, step_callback=None, copilot_mode: bool = False):
         self.target_url = target_url
         self.goal = goal
         self.max_steps = max_steps
@@ -49,6 +72,8 @@ class Agent:
         self.reporter = Reporter(goal=goal, target_url=target_url)
         self.history = []
         self.step_callback = step_callback
+        self.copilot_mode = copilot_mode
+        self.action_queue = queue.Queue()
 
     def run(self):
         print(f"Starting Agent. Target: {self.target_url} | Goal: {self.goal}")
@@ -103,9 +128,58 @@ What should you do next? Return a single JSON object.
 
                 # Think
                 try:
-                    decision = self.brain.query(SYSTEM_PROMPT, user_prompt)
-                    print(f"Brain Thought: {decision.get('thought')}")
-                    print(f"Brain Decision: {decision.get('action')} | Selector: {decision.get('selector')} | Value: {decision.get('value')}")
+                    if self.copilot_mode:
+                        # 1. Suggest options using Brain
+                        decision = self.brain.query(COPILOT_SYSTEM_PROMPT, user_prompt)
+                        print(f"Copilot Options Thought: {decision.get('thought')}")
+                        
+                        screenshot_path = self.browser.capture_screenshot()
+                        
+                        # 2. Invoke step callback with type: copilot_query
+                        if self.step_callback:
+                            self.step_callback({
+                                "type": "copilot_query",
+                                "step": step,
+                                "url": current_url,
+                                "screenshot": screenshot_path,
+                                "logs": console_logs,
+                                "net_errors": network_errors,
+                                "options": decision.get("options", []),
+                                "thought": decision.get("thought", "")
+                            })
+                        
+                        # 3. Block waiting for input
+                        print("Agent paused in Copilot Mode. Waiting for user input...")
+                        user_decision = self.action_queue.get()
+                        
+                        if user_decision.get("type") == "custom":
+                            command = user_decision.get("command")
+                            print(f"Received custom command: '{command}'. Translating to action...")
+                            
+                            translation_prompt = f"""Target URL: {current_url}
+Visible interactive elements:
+{elements_str}
+
+The user wants to perform this custom action: "{command}"
+Translate this custom action into a single valid structured action.
+
+Expected JSON output format:
+{{
+  "thought": "Brief explanation of how the custom command maps to the element",
+  "action": "click" | "fill" | "navigate" | "wait" | "report_bug" | "finish",
+  "selector": "The CSS selector for the element",
+  "value": "Value to fill, navigate or wait"
+}}
+"""
+                            decision = self.brain.query(SYSTEM_PROMPT, translation_prompt)
+                        else:
+                            decision = user_decision.get("action")
+                        
+                        print(f"Resolved Copilot Action: {decision.get('action')} | Selector: {decision.get('selector')} | Value: {decision.get('value')}")
+                    else:
+                        decision = self.brain.query(SYSTEM_PROMPT, user_prompt)
+                        print(f"Brain Thought: {decision.get('thought')}")
+                        print(f"Brain Decision: {decision.get('action')} | Selector: {decision.get('selector')} | Value: {decision.get('value')}")
                 except Exception as e:
                     print(f"Error querying brain: {e}")
                     # Capture screenshot of failure

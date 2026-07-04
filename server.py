@@ -135,6 +135,7 @@ async def test_websocket(websocket: WebSocket):
     ollama_url = params.get("ollama_url", "http://localhost:11434")
     model = params.get("model", "qwen2.5-coder:7b")
     headless = params.get("headless", True)
+    copilot_mode = params.get("copilot_mode", False)
     
     # Resolve local path if it refers to a file on disk
     if os.path.exists(url) and not url.startswith("file://"):
@@ -147,12 +148,19 @@ async def test_websocket(websocket: WebSocket):
         if step_data.get("screenshot"):
             step_data["screenshot"] = f"/screenshots/{os.path.basename(step_data['screenshot'])}"
         
-        msg_queue.put({
-            "type": "step",
-            "data": step_data
-        })
+        # If it's a copilot query message, forward it directly as type copilot_query
+        if isinstance(step_data, dict) and step_data.get("type") == "copilot_query":
+            msg_queue.put(step_data)
+        else:
+            msg_queue.put({
+                "type": "step",
+                "data": step_data
+            })
+
+    agent = None
 
     def agent_worker():
+        nonlocal agent
         try:
             agent = Agent(
                 target_url=url,
@@ -161,7 +169,8 @@ async def test_websocket(websocket: WebSocket):
                 ollama_url=ollama_url,
                 model=model,
                 headless=headless,
-                step_callback=step_callback
+                step_callback=step_callback,
+                copilot_mode=copilot_mode
             )
             agent.run()
             # Feed final report details
@@ -181,6 +190,18 @@ async def test_websocket(websocket: WebSocket):
     worker_thread = threading.Thread(target=agent_worker, daemon=True)
     worker_thread.start()
 
+    # Reader Task to read from WebSocket and feed into agent.action_queue
+    async def websocket_reader():
+        try:
+            while worker_thread.is_alive():
+                data = await websocket.receive_json()
+                if agent:
+                    agent.action_queue.put(data)
+        except Exception:
+            pass
+
+    reader_task = asyncio.create_task(websocket_reader())
+
     # Stream loop
     while worker_thread.is_alive() or not msg_queue.empty():
         while not msg_queue.empty():
@@ -190,4 +211,5 @@ async def test_websocket(websocket: WebSocket):
                 break
         await asyncio.sleep(0.2)
         
+    reader_task.cancel()
     await websocket.close()

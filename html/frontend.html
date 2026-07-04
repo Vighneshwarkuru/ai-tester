@@ -254,12 +254,16 @@
                 <textarea id="goal" class="form-control" placeholder="e.g. Click the 'Learn more' link and check for errors" rows="3" style="resize: none;"></textarea>
                 <span style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 4px; display: block;">If left empty, the AI will figure out what to test automatically.</span>
             </div>
-            <div class="form-group" style="display: flex; align-items: center; gap: 8px; margin-bottom: 24px;">
+            <div class="form-group" style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
                 <input type="checkbox" id="showBrowser" checked style="cursor: pointer; width: 18px; height: 18px; accent-color: var(--accent);">
                 <label for="showBrowser" style="margin: 0; cursor: pointer; text-transform: none; font-size: 0.85rem; font-weight: 500;">Show browser window while testing</label>
             </div>
+            <div class="form-group" style="display: flex; align-items: center; gap: 8px; margin-bottom: 24px;">
+                <input type="checkbox" id="copilotMode" style="cursor: pointer; width: 18px; height: 18px; accent-color: var(--accent);">
+                <label for="copilotMode" style="margin: 0; cursor: pointer; text-transform: none; font-size: 0.85rem; font-weight: 500;">Enable Copilot (Interactive Mode)</label>
+            </div>
             <button id="btnRun" class="btn">
-                Run Autonomous Test
+                Run Test
             </button>
         </div>
 
@@ -270,6 +274,30 @@
                 <div class="status-title" id="statusTitle">Validating website...</div>
             </div>
             <div class="status-detail" id="statusDetail">Verifying URL reachability.</div>
+        </div>
+
+        <!-- Copilot Interactive Dialog Box -->
+        <div class="status-container" id="copilotBox" style="display: none; border-color: var(--accent); background: rgba(255,255,255,0.02); text-align: left;">
+            <div class="status-header">
+                <div class="status-title" style="color: var(--accent);">Copilot Choice Required</div>
+            </div>
+            <div class="status-detail" id="copilotThought" style="margin-bottom: 16px; font-style: italic;">"Thinking..."</div>
+            
+            <div id="copilotScreenshotContainer" style="margin-bottom: 16px; text-align: center; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; max-height: 250px; display: none;">
+                <img id="copilotScreenshot" src="" style="max-width: 100%; max-height: 250px; object-fit: contain;">
+            </div>
+
+            <div id="copilotOptions" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
+                <!-- suggested action buttons go here -->
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+                <label for="customCommand" style="font-size: 0.7rem;">Or type a custom command:</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="customCommand" class="form-control" placeholder="e.g. click the button containing 'Next'" style="flex: 1; padding: 10px;">
+                    <button id="btnSubmitCustom" class="btn" style="width: auto; padding: 10px 20px;">Send</button>
+                </div>
+            </div>
         </div>
 
         <!-- Finished Report Actions -->
@@ -361,22 +389,93 @@
                 const wsScheme = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
                 const wsUrl = `${wsScheme}//${window.location.host}/api/test-ws`;
                 const socket = new WebSocket(wsUrl);
-
                 const showBrowser = document.getElementById('showBrowser').checked;
+                const copilotMode = document.getElementById('copilotMode').checked;
 
                 socket.onopen = () => {
                     socket.send(JSON.stringify({
                         url,
                         goal,
                         steps: 10,
-                        headless: !showBrowser
+                        headless: !showBrowser,
+                        copilot_mode: copilotMode
                     }));
+                };
+
+                // Event listener for custom command submit
+                const btnSubmitCustom = document.getElementById('btnSubmitCustom');
+                const customCommand = document.getElementById('customCommand');
+
+                const submitCustomAction = () => {
+                    const commandVal = customCommand.value.trim();
+                    if (!commandVal) return;
+                    
+                    copilotBox.style.display = 'none';
+                    statusBox.style.display = 'block';
+                    statusTitle.textContent = 'Translating and running custom command...';
+                    statusDetail.textContent = `Command: "${commandVal}"`;
+                    
+                    socket.send(JSON.stringify({
+                        type: 'custom',
+                        command: commandVal
+                    }));
+                    customCommand.value = '';
+                };
+
+                btnSubmitCustom.onclick = submitCustomAction;
+                customCommand.onkeypress = (e) => {
+                    if (e.key === 'Enter') submitCustomAction();
                 };
 
                 socket.onmessage = (event) => {
                     const message = JSON.parse(event.data);
 
-                    if (message.type === 'step') {
+                    if (message.type === 'copilot_query') {
+                        // Switch UI to copilot box
+                        statusBox.style.display = 'none';
+                        copilotBox.style.display = 'block';
+                        
+                        const copilotThought = document.getElementById('copilotThought');
+                        copilotThought.textContent = `"${message.thought}"`;
+                        
+                        const copilotScreenshotContainer = document.getElementById('copilotScreenshotContainer');
+                        const copilotScreenshot = document.getElementById('copilotScreenshot');
+                        if (message.screenshot) {
+                            copilotScreenshot.src = message.screenshot;
+                            copilotScreenshotContainer.style.display = 'block';
+                        } else {
+                            copilotScreenshotContainer.style.display = 'none';
+                        }
+                        
+                        const copilotOptions = document.getElementById('copilotOptions');
+                        copilotOptions.innerHTML = '';
+                        
+                        if (message.options && message.options.length > 0) {
+                            message.options.forEach(opt => {
+                                const btnOpt = document.createElement('button');
+                                btnOpt.className = 'btn btn-outline';
+                                btnOpt.style.justifyContent = 'flex-start';
+                                btnOpt.style.padding = '10px 14px';
+                                btnOpt.style.fontSize = '0.85rem';
+                                btnOpt.textContent = opt.label || `${opt.action} (${opt.selector})`;
+                                btnOpt.onclick = () => {
+                                    copilotBox.style.display = 'none';
+                                    statusBox.style.display = 'block';
+                                    statusTitle.textContent = 'Executing chosen option...';
+                                    statusDetail.textContent = opt.label;
+                                    
+                                    socket.send(JSON.stringify({
+                                        type: 'option',
+                                        action: opt
+                                    }));
+                                };
+                                copilotOptions.appendChild(btnOpt);
+                            });
+                        } else {
+                            copilotOptions.innerHTML = '<div style="font-size: 0.85rem; color: var(--text-secondary); text-align: center;">No suggested options found. Use custom input below.</div>';
+                        }
+
+                    } else if (message.type === 'step') {
                         const step = message.data;
                         statusDetail.innerHTML = `
                             <strong>Step ${step.step}:</strong> ${step.decision.action.toUpperCase()}<br>
@@ -385,6 +484,7 @@
                     } else if (message.type === 'completed') {
                         // Finished successfully
                         statusBox.style.display = 'none';
+                        copilotBox.style.display = 'none';
                         reportBox.style.display = 'block';
                         btnRun.disabled = false;
                         
