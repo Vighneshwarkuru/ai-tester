@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Browser Tester</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0b0f19;
+            --bg-secondary: #161f30;
+            --bg-tertiary: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent: #6366f1;
+            --accent-hover: #4f46e5;
+            --border: #334155;
+            --danger: #ef4444;
+            --success: #10b981;
+            --glow: rgba(99, 102, 241, 0.2);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background: var(--bg-primary);
+            background-image: radial-gradient(circle at 50% 30%, #1e1b4b 0%, var(--bg-primary) 70%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .card {
+            background: rgba(22, 31, 48, 0.75);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 40px;
+            width: 100%;
+            max-width: 580px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .logo-container {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, var(--accent), #a855f7);
+            border-radius: 18px;
+            font-weight: 800;
+            font-size: 1.8rem;
+            color: white;
+            box-shadow: 0 0 25px var(--glow);
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-control {
+            width: 100%;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 18px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 15px var(--glow);
+        }
+
+        .btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--accent), #4f46e5);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 14px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.35);
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 25px rgba(99, 102, 241, 0.5);
+        }
+
+        .btn:disabled {
+            background: var(--border);
+            color: var(--text-secondary);
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        /* Status & Loading Indicator */
+        .status-container {
+            display: none;
+            margin-top: 24px;
+            padding: 20px;
+            background: rgba(99, 102, 241, 0.05);
+            border: 1px solid rgba(99, 102, 241, 0.15);
+            border-radius: 16px;
+            text-align: left;
+        }
+
+        .status-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(99, 102, 241, 0.1);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .status-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .status-detail {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* Final Action Box */
+        .report-box {
+            display: none;
+            margin-top: 32px;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .success-icon {
+            font-size: 3rem;
+            color: var(--success);
+            margin-bottom: 16px;
+        }
+
+        .report-box h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .report-box p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        .report-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success), #059669);
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.35);
+        }
+        .btn-success:hover {
+            box-shadow: 0 6px 25px rgba(16, 185, 129, 0.5);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            box-shadow: none;
+        }
+        .btn-outline:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="logo-container">A</div>
+        <h1>AI Browser Tester</h1>
+        <p class="subtitle">Autonomous Web Agent QA Testing</p>
+
+        <div id="testSetupForm">
+            <div class="form-group">
+                <label for="url">Website URL</label>
+                <input type="text" id="url" class="form-control" placeholder="https://example.com" value="file:///Users/vighneshwarkuru/ai-tester/html/homepage.html">
+            </div>
+            <div class="form-group" style="display: flex; align-items: center; gap: 8px; margin-bottom: 24px;">
+                <input type="checkbox" id="showBrowser" checked style="cursor: pointer; width: 18px; height: 18px; accent-color: var(--accent);">
+                <label for="showBrowser" style="margin: 0; cursor: pointer; text-transform: none; font-size: 0.85rem; font-weight: 500;">Show browser window while testing</label>
+            </div>
+            <button id="btnRun" class="btn">
+                Analyze & Test Website
+            </button>
+        </div>
+
+        <!-- Testing Progress Status -->
+        <div class="status-container" id="statusBox">
+            <div class="status-header">
+                <div class="spinner" id="statusSpinner"></div>
+                <div class="status-title" id="statusTitle">Validating website...</div>
+            </div>
+            <div class="status-detail" id="statusDetail">Verifying URL reachability.</div>
+        </div>
+
+        <!-- Finished Report Actions -->
+        <div class="report-box" id="reportBox">
+            <div class="success-icon">✓</div>
+            <h3>Test Completed Successfully</h3>
+            <p id="reportSummary">The autonomous agent has finished testing the website and compiled the findings.</p>
+            
+            <div class="report-buttons">
+                <a id="pdfLink" class="btn btn-success" href="/reports/report.pdf" target="_blank">
+                    View PDF Report
+                </a>
+                <a id="htmlLink" class="btn btn-outline" href="/reports/report.html" target="_blank">
+                    View Interactive Report
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const btnRun = document.getElementById('btnRun');
+        const urlInput = document.getElementById('url');
+        const testSetupForm = document.getElementById('testSetupForm');
+        const statusBox = document.getElementById('statusBox');
+        const statusTitle = document.getElementById('statusTitle');
+        const statusDetail = document.getElementById('statusDetail');
+        const statusSpinner = document.getElementById('statusSpinner');
+        const reportBox = document.getElementById('reportBox');
+        const reportSummary = document.getElementById('reportSummary');
+
+        btnRun.addEventListener('click', async () => {
+            const url = urlInput.value.trim();
+            if (!url) {
+                alert('Please enter a website URL.');
+                return;
+            }
+
+            // Reset UI
+            statusBox.style.display = 'block';
+            reportBox.style.display = 'none';
+            btnRun.disabled = true;
+            statusSpinner.style.display = 'block';
+
+            try {
+                // Step 1: Validate URL
+                statusTitle.textContent = 'Validating website...';
+                statusDetail.textContent = `Connecting to ${url}`;
+                
+                const valRes = await fetch('/api/validate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url })
+                });
+
+                if (!valRes.ok) {
+                    const err = await valRes.json();
+                    throw new Error(err.detail || 'URL could not be validated.');
+                }
+
+                // Step 2: Analyze site purpose and generate custom goal
+                statusTitle.textContent = 'Analyzing website layout...';
+                statusDetail.textContent = 'Identifying site features to build testing goals...';
+
+                const analyzeRes = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url })
+                });
+
+                if (!analyzeRes.ok) {
+                    const err = await analyzeRes.json();
+                    throw new Error(err.detail || 'Failed to analyze page layout.');
+                }
+
+                const analyzeData = await analyzeRes.json();
+                const goal = analyzeData.suggested_goal;
+                
+                statusTitle.textContent = 'Running autonomous agent...';
+                statusDetail.textContent = `Site Type: ${analyzeData.purpose}\nGoal: ${goal}`;
+
+                // Step 3: Start WebSocket testing connection
+                const wsScheme = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const wsUrl = `${wsScheme}//${window.location.host}/api/test-ws`;
+                const socket = new WebSocket(wsUrl);
+
+                const showBrowser = document.getElementById('showBrowser').checked;
+
+                socket.onopen = () => {
+                    socket.send(JSON.stringify({
+                        url,
+                        goal,
+                        steps: 10,
+                        headless: !showBrowser
+                    }));
+                };
+
+                socket.onmessage = (event) => {
+                    const message = JSON.parse(event.data);
+
+                    if (message.type === 'step') {
+                        const step = message.data;
+                        statusDetail.innerHTML = `
+                            <strong>Step ${step.step}:</strong> ${step.decision.action.toUpperCase()}<br>
+                            <span style="font-style: italic;">"${step.decision.thought}"</span>
+                        `;
+                    } else if (message.type === 'completed') {
+                        // Finished successfully
+                        statusBox.style.display = 'none';
+                        reportBox.style.display = 'block';
+                        btnRun.disabled = false;
+                        
+                        const numBugs = message.bugs ? message.bugs.length : 0;
+                        reportSummary.textContent = `Testing finished in ${message.duration}s. Detected ${numBugs} bug(s).`;
+                        
+                        socket.close();
+                    } else if (message.type === 'error') {
+                        throw new Error(message.message);
+                    }
+                };
+
+                socket.onerror = () => {
+                    throw new Error('WebSocket connection error.');
+                };
+
+            } catch (err) {
+                statusTitle.textContent = 'Testing failed';
+                statusDetail.textContent = err.message;
+                statusSpinner.style.display = 'none';
+                btnRun.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
