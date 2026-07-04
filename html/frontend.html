@@ -7,17 +7,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-primary: #0b0f19;
-            --bg-secondary: #161f30;
-            --bg-tertiary: #1e293b;
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
-            --accent: #6366f1;
-            --accent-hover: #4f46e5;
-            --border: #334155;
-            --danger: #ef4444;
-            --success: #10b981;
-            --glow: rgba(99, 102, 241, 0.2);
+            --bg-primary: #000000;
+            --bg-secondary: #111111;
+            --bg-tertiary: #1c1c1c;
+            --text-primary: #ffffff;
+            --text-secondary: #888888;
+            --accent: #ffffff;
+            --accent-hover: #e5e5e5;
+            --border: #2c2c2c;
+            --danger: #ffffff;
+            --success: #ffffff;
+            --glow: rgba(255, 255, 255, 0.05);
         }
 
         * {
@@ -29,7 +29,6 @@
 
         body {
             background: var(--bg-primary);
-            background-image: radial-gradient(circle at 50% 30%, #1e1b4b 0%, var(--bg-primary) 70%);
             color: var(--text-primary);
             min-height: 100vh;
             display: flex;
@@ -39,14 +38,13 @@
         }
 
         .card {
-            background: rgba(22, 31, 48, 0.75);
-            backdrop-filter: blur(16px);
+            background: var(--bg-secondary);
             border: 1px solid var(--border);
-            border-radius: 24px;
+            border-radius: 12px;
             padding: 40px;
             width: 100%;
-            max-width: 580px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
             text-align: center;
             transition: all 0.3s ease;
         }
@@ -55,26 +53,25 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 64px;
-            height: 64px;
-            background: linear-gradient(135deg, var(--accent), #a855f7);
-            border-radius: 18px;
+            width: 48px;
+            height: 48px;
+            background: #ffffff;
+            border-radius: 8px;
             font-weight: 800;
-            font-size: 1.8rem;
-            color: white;
-            box-shadow: 0 0 25px var(--glow);
+            font-size: 1.4rem;
+            color: #000000;
             margin-bottom: 24px;
         }
 
         h1 {
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             font-weight: 700;
             margin-bottom: 8px;
             letter-spacing: -0.5px;
         }
 
         .subtitle {
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             color: var(--text-secondary);
             margin-bottom: 32px;
         }
@@ -87,7 +84,7 @@
 
         .form-group label {
             display: block;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 600;
             color: var(--text-secondary);
             margin-bottom: 8px;
@@ -99,27 +96,27 @@
             width: 100%;
             background: var(--bg-tertiary);
             border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 14px 18px;
+            border-radius: 8px;
+            padding: 12px 16px;
             color: var(--text-primary);
-            font-size: 1rem;
+            font-size: 0.95rem;
             transition: all 0.2s;
         }
 
         .form-control:focus {
             outline: none;
             border-color: var(--accent);
-            box-shadow: 0 0 15px var(--glow);
+            box-shadow: 0 0 10px var(--glow);
         }
 
         .btn {
             width: 100%;
-            background: linear-gradient(135deg, var(--accent), #4f46e5);
-            color: white;
-            border: none;
-            border-radius: 12px;
+            background: #ffffff;
+            color: #000000;
+            border: 1px solid #ffffff;
+            border-radius: 8px;
             padding: 14px;
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
@@ -127,20 +124,18 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
-            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.35);
         }
 
         .btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 25px rgba(99, 102, 241, 0.5);
+            background: var(--accent-hover);
+            border-color: var(--accent-hover);
         }
 
         .btn:disabled {
-            background: var(--border);
-            color: var(--text-secondary);
+            background: var(--bg-tertiary);
+            color: #555555;
+            border-color: var(--border);
             cursor: not-allowed;
-            box-shadow: none;
-            transform: none;
         }
 
         /* Status & Loading Indicator */
@@ -148,9 +143,9 @@
             display: none;
             margin-top: 24px;
             padding: 20px;
-            background: rgba(99, 102, 241, 0.05);
-            border: 1px solid rgba(99, 102, 241, 0.15);
-            border-radius: 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
             text-align: left;
         }
 
@@ -162,10 +157,10 @@
         }
 
         .spinner {
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(99, 102, 241, 0.1);
-            border-top-color: var(--accent);
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #ffffff;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -175,7 +170,7 @@
         }
 
         .status-title {
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             font-weight: 600;
             color: var(--text-primary);
         }
@@ -199,19 +194,19 @@
         }
 
         .success-icon {
-            font-size: 3rem;
-            color: var(--success);
+            font-size: 2.5rem;
+            color: #ffffff;
             margin-bottom: 16px;
         }
 
         .report-box h3 {
-            font-size: 1.25rem;
+            font-size: 1.15rem;
             font-weight: 600;
             margin-bottom: 8px;
         }
 
         .report-box p {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: var(--text-secondary);
             margin-bottom: 24px;
         }
@@ -223,22 +218,23 @@
         }
 
         .btn-success {
-            background: linear-gradient(135deg, var(--success), #059669);
-            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.35);
+            background: #ffffff;
+            color: #000000;
+            border: 1px solid #ffffff;
         }
         .btn-success:hover {
-            box-shadow: 0 6px 25px rgba(16, 185, 129, 0.5);
+            background: var(--accent-hover);
+            border-color: var(--accent-hover);
         }
 
         .btn-outline {
             background: transparent;
             border: 1px solid var(--border);
-            color: var(--text-primary);
-            box-shadow: none;
+            color: #ffffff;
         }
         .btn-outline:hover {
             background: var(--bg-tertiary);
-            border-color: var(--text-secondary);
+            border-color: #888888;
         }
     </style>
 </head>
@@ -253,12 +249,17 @@
                 <label for="url">Website URL</label>
                 <input type="text" id="url" class="form-control" placeholder="https://example.com" value="file:///Users/vighneshwarkuru/ai-tester/html/homepage.html">
             </div>
+            <div class="form-group">
+                <label for="goal">Testing Goal (Optional)</label>
+                <textarea id="goal" class="form-control" placeholder="e.g. Click the 'Learn more' link and check for errors" rows="3" style="resize: none;"></textarea>
+                <span style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 4px; display: block;">If left empty, the AI will figure out what to test automatically.</span>
+            </div>
             <div class="form-group" style="display: flex; align-items: center; gap: 8px; margin-bottom: 24px;">
                 <input type="checkbox" id="showBrowser" checked style="cursor: pointer; width: 18px; height: 18px; accent-color: var(--accent);">
                 <label for="showBrowser" style="margin: 0; cursor: pointer; text-transform: none; font-size: 0.85rem; font-weight: 500;">Show browser window while testing</label>
             </div>
             <button id="btnRun" class="btn">
-                Analyze & Test Website
+                Run Autonomous Test
             </button>
         </div>
 
@@ -328,26 +329,33 @@
                     throw new Error(err.detail || 'URL could not be validated.');
                 }
 
-                // Step 2: Analyze site purpose and generate custom goal
-                statusTitle.textContent = 'Analyzing website layout...';
-                statusDetail.textContent = 'Identifying site features to build testing goals...';
+                // Step 2: Decide testing goal (automatic or custom)
+                const goalInput = document.getElementById('goal');
+                let goal = goalInput.value.trim();
+                let purpose = "Custom User Goal";
 
-                const analyzeRes = await fetch('/api/analyze', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url })
-                });
+                if (!goal) {
+                    statusTitle.textContent = 'Analyzing website layout...';
+                    statusDetail.textContent = 'Identifying site features to build testing goals...';
 
-                if (!analyzeRes.ok) {
-                    const err = await analyzeRes.json();
-                    throw new Error(err.detail || 'Failed to analyze page layout.');
+                    const analyzeRes = await fetch('/api/analyze', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ url })
+                    });
+
+                    if (!analyzeRes.ok) {
+                        const err = await analyzeRes.json();
+                        throw new Error(err.detail || 'Failed to analyze page layout.');
+                    }
+
+                    const analyzeData = await analyzeRes.json();
+                    goal = analyzeData.suggested_goal;
+                    purpose = analyzeData.purpose;
                 }
-
-                const analyzeData = await analyzeRes.json();
-                const goal = analyzeData.suggested_goal;
                 
                 statusTitle.textContent = 'Running autonomous agent...';
-                statusDetail.textContent = `Site Type: ${analyzeData.purpose}\nGoal: ${goal}`;
+                statusDetail.textContent = `Site Type: ${purpose}\nGoal: ${goal}`;
 
                 // Step 3: Start WebSocket testing connection
                 const wsScheme = window.location.protocol === 'https:' ? 'wss:' : 'ws:';

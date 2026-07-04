@@ -189,17 +189,17 @@ class Reporter:
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-primary: #0b0f19;
-            --bg-secondary: #161f30;
-            --bg-tertiary: #1e293b;
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
-            --accent: #6366f1;
-            --accent-hover: #4f46e5;
-            --border: #334155;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --success: #10b981;
+            --bg-primary: #000000;
+            --bg-secondary: #111111;
+            --bg-tertiary: #1c1c1c;
+            --text-primary: #ffffff;
+            --text-secondary: #888888;
+            --accent: #ffffff;
+            --accent-hover: #e5e5e5;
+            --border: #2c2c2c;
+            --danger: #ffffff;
+            --warning: #ffffff;
+            --success: #ffffff;
         }
         * {
             box-sizing: border-box;
@@ -260,11 +260,11 @@ class Reporter:
         }
         .timeline-item.active {
             background: var(--accent);
-            color: white;
+            color: #000000;
         }
         .timeline-item.active .step-time,
         .timeline-item.active .step-action-title {
-            color: white;
+            color: #000000;
         }
         .step-num {
             width: 32px;
@@ -329,29 +329,28 @@ class Reporter:
             color: var(--text-primary);
         }
         .metric-card .status-val {
-            color: var(--success);
+            color: var(--text-primary);
             font-size: 1.1rem;
         }
         /* Bug Panel */
         .bugs-section {
-            background: rgba(239, 68, 68, 0.05);
-            border: 1px solid rgba(239, 68, 68, 0.2);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
             padding: 24px;
             border-radius: 12px;
             margin-bottom: 32px;
         }
         .bugs-section h3 {
-            color: var(--danger);
+            color: var(--text-primary);
             margin-bottom: 16px;
         }
         .bug-card {
-            display: flex;
-            align-items: center;
-            background: var(--bg-secondary);
-            padding: 12px 16px;
+            display: block;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            padding: 16px;
             border-radius: 8px;
-            margin-bottom: 8px;
-            border-left: 4px solid var(--danger);
+            margin-bottom: 12px;
         }
         .badge {
             padding: 4px 8px;
@@ -359,17 +358,20 @@ class Reporter:
             font-weight: 700;
             border-radius: 4px;
             margin-right: 12px;
+            display: inline-block;
         }
         .badge-danger {
-            background: var(--danger);
-            color: white;
+            background: #ffffff;
+            color: #000000;
+            border: 1px solid #ffffff;
         }
         .badge-warning {
-            background: var(--warning);
-            color: white;
+            background: transparent;
+            color: #ffffff;
+            border: 1px solid var(--border);
         }
         .no-bugs {
-            color: var(--success);
+            color: var(--text-secondary);
             font-weight: 500;
         }
         /* Step Detail Styles */
@@ -395,8 +397,9 @@ class Reporter:
         }
         .step-url {
             font-size: 0.85rem;
-            color: var(--accent);
-            background: rgba(99, 102, 241, 0.1);
+            color: var(--text-primary);
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
             padding: 4px 12px;
             border-radius: 100px;
         }
@@ -448,10 +451,11 @@ class Reporter:
             color: var(--text-secondary);
         }
         .log-error {
-            color: var(--danger);
+            color: #ffffff;
+            font-weight: bold;
         }
         .log-warn {
-            color: var(--warning);
+            color: var(--text-secondary);
         }
         .log-empty {
             font-size: 0.85rem;
